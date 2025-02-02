@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Video Evaluator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      line-height: 1.6;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      margin-left: 1rem;
+    }
+    #result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Video Evaluator</h1>
+  <p>Enter a YouTube video URL to evaluate whether it's worth watching.</p>
+  <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." size="50">
+  <button id="evaluateBtn">Evaluate</button>
+  <div id="result"></div>
+
+  <script>
+    // When the "Evaluate" button is clicked, send the video URL to the backend.
+    document.getElementById('evaluateBtn').addEventListener('click', async () => {
+      const url = document.getElementById('videoUrl').value.trim();
+      const resultDiv = document.getElementById('result');
+      
+      if (!url) {
+        resultDiv.textContent = "Please enter a valid YouTube URL.";
+        return;
+      }
+      
+      resultDiv.textContent = "Evaluating video, please wait...";
+      
+      try {
+        // Make a POST request to your backend endpoint.
+        const response = await fetch('/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        // Expecting the backend to return an object with a "summary" key.
+        resultDiv.textContent = data.summary || "No summary available.";
+      } catch (error) {
+        resultDiv.textContent = "Error: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
