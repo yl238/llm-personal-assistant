@@ -112,5 +112,5 @@ if __name__ == "__main__":
         with open('prompt.txt', 'w') as f:
             f.write(output)
     else:
-        with open('summary.md', 'w') as f:
+        with open('video_summary.md', 'w') as f:
             f.write(output)

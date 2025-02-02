@@ -1,6 +1,7 @@
 *.txt
 *.mp3
 *.wav
+video_summary.md
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
