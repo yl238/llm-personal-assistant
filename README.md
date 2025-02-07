@@ -1,2 +1,4 @@
 # Personal assistant using LLMs
-1. Youtube video Evaluator - summarise a video to decide whether it's worth watching
+1. `youtube_evaluator.py`: Youtube video Evaluator. This uses an LLM to summarise a video's transcript for you to decide whether it's worth watching. It provides timestamps where interesting sections begin so you can navigate directly to where those sections begin. 
+
+Install the libraries needed via Poetry. Run `python youtube_evaluator.py` and it will ask whether you want to generate only the LLM prompt. If you don't have an API key or just don't want to spend money, type 'y' and it will write the prompt to a file. You can then c/p the content into ChatGPT or some other provider and get the feedback there. Alternatively you can type 'n' and the prompt will be sent to OpenAI through the API. The default model is GPT-4o, which you can change when initialising the LLM processor. 
