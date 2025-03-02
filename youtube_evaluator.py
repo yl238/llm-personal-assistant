@@ -10,7 +10,6 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from llm_processing import LLMProcessor
 from transcribe_audio import AudioTranscriber
 
-
 class YouTubeVideoEvaluator:
     def __init__(
         self, audio_transcriber: AudioTranscriber, llm_processor: LLMProcessor
@@ -41,36 +40,41 @@ class YouTubeVideoEvaluator:
             )
         except Exception as e:
             print(f"No transcript available via API: {e}")
-
-        if not transcript_text.strip():
-            print(
-                "Transcript not found. Downloading video and transcribing audio..."
-            )
-            yt = YouTube(youtube_url)
-            # Prefer an audio-only stream if available.
-            stream = yt.streams.filter(only_audio=True).first()
-            if not stream:
-                stream = yt.streams.first()
-            temp_dir = tempfile.gettempdir()
-            filename = f"{video_id}.{stream.subtype}"
-            download_path = os.path.join(temp_dir, filename)
-            print(f"Downloading to {download_path} ...")
-            stream.download(output_path=temp_dir, filename=filename)
-            print("Download complete.")
-            # Transcribe the downloaded file. (Use inplace=False to preserve the original.)
-            transcript_file = self.audio_transcriber.transcribe(
-                download_path, inplace=False
-            )
-            with open(transcript_file, "r", encoding="utf-8") as f:
-                transcript_text = f.read()
-            # Optionally, remove temporary files:
-            os.remove(download_path)
-            # os.remove(transcript_file)
-
-        # Use the LLM to summarise the transcript and extract main points.
+            transcript_text = self.transcribe_local(youtube_url)
+         # Use the LLM to summarise the transcript and extract main points.
         summary = self.llm_processor.summarise_transcript(transcript_text)
         return summary
 
+    
+    def transcribe_local(self, youtube_url: str) -> str:
+        print(
+            "Transcript not found. Downloading video and transcribing audio..."
+        )
+        
+        yt = YouTube(youtube_url)
+        # Prefer an audio-only stream if available.
+        stream = yt.streams.filter(only_audio=True).first()
+        if not stream:
+            stream = yt.streams.first()
+        temp_dir = tempfile.gettempdir()
+        video_id = self.extract_video_id(youtube_url)
+        filename = f"{video_id}.{stream.subtype}"
+        download_path = os.path.join(temp_dir, filename)
+        print(f"Downloading to {download_path} ...")
+        stream.download(output_path=temp_dir, filename=filename)
+        print("Download complete.")
+        # Transcribe the downloaded file. (Use inplace=False to preserve the original.)
+        transcript_file = self.audio_transcriber.transcribe(
+            download_path, inplace=False
+        )
+        with open(transcript_file, "r", encoding="utf-8") as f:
+            transcript_text = f.read()
+        # Optionally, remove temporary files:
+        os.remove(download_path)
+        # os.remove(transcript_file)
+        return transcript_text
+
+       
     @staticmethod
     def extract_video_id(url: str) -> str:
         """
