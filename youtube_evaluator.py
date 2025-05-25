@@ -56,6 +56,8 @@ class YouTubeVideoEvaluator:
         stream = yt.streams.filter(only_audio=True).first()
         if not stream:
             stream = yt.streams.first()
+        if not stream:
+            raise RuntimeError("No downloadable streams found for this video.")
         temp_dir = tempfile.gettempdir()
         video_id = self.extract_video_id(youtube_url)
         filename = f"{video_id}.{stream.subtype}"
@@ -84,8 +86,14 @@ class YouTubeVideoEvaluator:
         qs = parse_qs(parsed.query)
         if "v" in qs:
             return qs["v"][0]
-        # Fallback: use the last part of the path.
-        return os.path.basename(parsed.path)
+        # Handle youtu.be short links
+        if "youtu.be" in parsed.netloc:
+            return parsed.path.lstrip("/")
+        # Fallback: use the last part of the path if it looks like a video ID
+        path = os.path.basename(parsed.path)
+        if len(path) == 11:  # YouTube video IDs are 11 chars
+            return path
+        raise ValueError("Could not extract a valid YouTube video ID from the URL.") 
 
     @staticmethod
     def format_timestamp(seconds: float) -> str:
