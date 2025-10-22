@@ -31,11 +31,12 @@ class YouTubeVideoEvaluator:
         transcript_text = ""
         try:
             # Try to fetch transcript via the API.
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+            ytt_api = YouTubeTranscriptApi()
+            transcript_list = ytt_api.fetch(video_id, languages=['en', 'en-US'])
             transcript_text = "\n".join(
                 [
                     f"[{self.format_timestamp(item['start'])}] {item['text']}"
-                    for item in transcript_list
+                    for item in transcript_list.to_raw_data()
                 ]
             )
         except Exception as e:
